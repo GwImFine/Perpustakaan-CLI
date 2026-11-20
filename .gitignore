@@ -1,0 +1,6 @@
+*.o
+perpustakaan
+data/katalog.txt
+data/user.txt
+data/peminjaman.txt
+data/*.tmp
