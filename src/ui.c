@@ -140,3 +140,13 @@ void ui_show_books(Book **list, size_t n, const char *title)
         }
     } while (ask_page(&page, pages));
 }
+
+void ui_show_book_detail(const Book *b)
+{
+    printf("  ID (ocaid)  : %s\n", b->ocaid);
+    printf("  Judul       : %s\n", b->title);
+    printf("  Pengarang   : %s\n", b->author);
+    printf("  Tahun       : %d\n", b->year);
+    printf("  Halaman     : %d\n", b->page_count);
+    printf("  Stok        : %d\n", b->stock);
+}
