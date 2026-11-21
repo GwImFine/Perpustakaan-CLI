@@ -65,3 +65,78 @@ void ui_title(const char *text)
     printf(" %s\n", text);
     printf("============================================================\n");
 }
+
+static int ask_page(size_t *page, size_t pages)
+{
+    char buf[32];
+    int v;
+
+    util_read_line("[N] Berikutnya  [P] Sebelumnya  [nomor] Lompat  [Q] Selesai : ", buf, sizeof(buf));
+    if (util_eof() || util_icmp(buf, "q") == 0 || buf[0] == '\0') {
+        return 0;
+    }
+    if (util_icmp(buf, "n") == 0) {
+        if (*page + 1 < pages) {
+            (*page)++;
+        } else {
+            puts("  (sudah di halaman terakhir)");
+        }
+    } else if (util_icmp(buf, "p") == 0) {
+        if (*page > 0) {
+            (*page)--;
+        } else {
+            puts("  (sudah di halaman pertama)");
+        }
+    } else if (util_parse_int(buf, 1, (int)pages, &v)) {
+        *page = (size_t)(v - 1);
+    } else {
+        puts("  ! Perintah tidak dikenal.");
+    }
+    return 1;
+}
+
+void ui_show_books(Book **list, size_t n, const char *title)
+{
+    size_t pages, page = 0, i, from, to;
+
+    if (n == 0) {
+        puts("\n(tidak ada data untuk ditampilkan)");
+        return;
+    }
+    pages = (n + PAGE_SIZE - 1) / PAGE_SIZE;
+    do {
+        from = page * PAGE_SIZE;
+        to = from + PAGE_SIZE < n ? from + PAGE_SIZE : n;
+        printf("\n%s\n", title);
+        put_line(121);
+        put_cell("No", 5);  printf(" | ");
+        put_cell("ID Buku (ocaid)", 26); printf(" | ");
+        put_cell("Judul", 36); printf(" | ");
+        put_cell("Pengarang", 22); printf(" | ");
+        put_cell("Tahun", 5); printf(" | ");
+        put_cell("Hal.", 5); printf(" | ");
+        put_cell("Stok", 4); putchar('\n');
+        put_line(121);
+        for (i = from; i < to; i++) {
+            char num[32], year[16], pg[16], stk[16];
+
+            snprintf(num, sizeof(num), "%zu", i + 1);
+            snprintf(year, sizeof(year), "%d", list[i]->year);
+            snprintf(pg, sizeof(pg), "%d", list[i]->page_count);
+            snprintf(stk, sizeof(stk), "%d", list[i]->stock);
+            put_cell(num, 5);  printf(" | ");
+            put_cell(list[i]->ocaid, 26); printf(" | ");
+            put_cell(list[i]->title, 36); printf(" | ");
+            put_cell(list[i]->author, 22); printf(" | ");
+            put_cell(year, 5); printf(" | ");
+            put_cell(pg, 5); printf(" | ");
+            put_cell(stk, 4); putchar('\n');
+        }
+        put_line(121);
+        printf("Halaman %zu/%zu  |  Menampilkan %zu-%zu dari %zu buku\n",
+               page + 1, pages, from + 1, to, n);
+        if (pages == 1) {
+            return;
+        }
+    } while (ask_page(&page, pages));
+}
