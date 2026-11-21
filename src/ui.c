@@ -150,3 +150,45 @@ void ui_show_book_detail(const Book *b)
     printf("  Halaman     : %d\n", b->page_count);
     printf("  Stok        : %d\n", b->stock);
 }
+
+void ui_show_loans(const BookList *bl, Loan **list, size_t n, int show_user, const char *title)
+{
+    size_t pages, page = 0, i, from, to;
+
+    if (n == 0) {
+        puts("\n(belum ada data peminjaman)");
+        return;
+    }
+    pages = (n + PAGE_SIZE - 1) / PAGE_SIZE;
+    do {
+        from = page * PAGE_SIZE;
+        to = from + PAGE_SIZE < n ? from + PAGE_SIZE : n;
+        printf("\n%s\n", title);
+        put_line(112);
+        put_cell("ID", 6); printf(" | ");
+        put_cell("Peminjam", 16); printf(" | ");
+        put_cell("ID Buku", 26); printf(" | ");
+        put_cell("Judul", 32); printf(" | ");
+        put_cell("Tanggal", 10); printf(" | ");
+        put_cell("Status", 8); putchar('\n');
+        put_line(112);
+        for (i = from; i < to; i++) {
+            const Book *b = booklist_find(bl, list[i]->ocaid);
+            char id[16];
+
+            snprintf(id, sizeof(id), "%u", list[i]->id);
+            put_cell(id, 6); printf(" | ");
+            put_cell(show_user ? list[i]->username : "-", 16); printf(" | ");
+            put_cell(list[i]->ocaid, 26); printf(" | ");
+            put_cell(b != NULL ? b->title : "(buku sudah dihapus)", 32); printf(" | ");
+            put_cell(list[i]->tanggal, 10); printf(" | ");
+            put_cell(list[i]->status, 8); putchar('\n');
+        }
+        put_line(112);
+        printf("Halaman %zu/%zu  |  Menampilkan %zu-%zu dari %zu transaksi\n",
+               page + 1, pages, from + 1, to, n);
+        if (pages == 1) {
+            return;
+        }
+    } while (ask_page(&page, pages));
+}
