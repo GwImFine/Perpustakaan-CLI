@@ -213,3 +213,76 @@ int book_catalog_save(const BookList *bl)
     }
     return util_replace_file(tmp, FILE_CATALOG);
 }
+
+static int split_fields(char *line, char **fields, int max)
+{
+    int n = 0;
+    char *p = line;
+
+    fields[n++] = p;
+    while (*p != '\0' && n < max) {
+        if (*p == '|') {
+            *p = '\0';
+            fields[n++] = p + 1;
+        }
+        p++;
+    }
+    return n;
+}
+
+static int parse_catalog_line(char *line, Book *out)
+{
+    char *f[9];
+    Book b;
+    int year, pages, stock;
+
+    if (split_fields(line, f, 9) != 9) {
+        return 0;
+    }
+    if (!util_parse_int(f[3], 1, 9999, &year) ||
+        !util_parse_int(f[4], 1, 1000000, &pages) ||
+        !util_parse_int(f[8], 0, 1000000, &stock) || !util_is_token(f[0])) {
+        return 0;
+    }
+    memset(&b, 0, sizeof(b));
+    util_copy(b.ocaid, sizeof(b.ocaid), f[0]);
+    util_copy(b.title, sizeof(b.title), f[1]);
+    util_copy(b.author, sizeof(b.author), f[2]);
+    b.year = year;
+    b.page_count = pages;
+    util_copy(b.edition, sizeof(b.edition), f[5]);
+    util_copy(b.work, sizeof(b.work), f[6]);
+    util_copy(b.url, sizeof(b.url), f[7]);
+    b.stock = stock;
+    *out = b;
+    return 1;
+}
+
+int book_catalog_load(BookList *bl)
+{
+    FILE *f = fopen(FILE_CATALOG, "r");
+    char line[LINE_BUFFER];
+    Book b;
+
+    if (f == NULL) {
+        return -1;
+    }
+    while (fgets(line, sizeof(line), f) != NULL) {
+        size_t len = strlen(line);
+
+        while (len > 0 && (line[len - 1] == '\n' || line[len - 1] == '\r')) {
+            line[--len] = '\0';
+        }
+        if (len == 0) {
+            continue;
+        }
+        if (parse_catalog_line(line, &b)) {
+            if (booklist_add(bl, &b) == -1) {
+                fclose(f);
+                return -1;
+            }
+        }
+    }
+    fclose(f);
+    return 0;
+}
