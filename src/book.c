@@ -7,20 +7,20 @@
 
 #include "util.h"
 
-void booklist_init(Booklist *bl)
+void booklist_init(BookList *bl)
 {
     bl->items = NULL;
     bl->count = 0;
     bl->capacity = 0;
 }
 
-void booklist_free(Booklist *bl)
+void booklist_free(BookList *bl)
 {
     free(bl->items);
     booklist_init(bl);
 }
 
-static int booklist_reserve(Booklist *bl, size_t need)
+static int booklist_reserve(BookList *bl, size_t need)
 {
     size_t cap;
     Book *p;
@@ -41,7 +41,7 @@ static int booklist_reserve(Booklist *bl, size_t need)
     return 0;
 }
 
-Book *Booklist_find(const Booklist *bl, const char *ocaid)
+Book *Booklist_find(const BookList *bl, const char *ocaid)
 {
     for (i = 0; i < bl->count; i++) {
         if (strcmp(bl->items[i].ocaid, ocaid) == 0) {
@@ -51,7 +51,7 @@ Book *Booklist_find(const Booklist *bl, const char *ocaid)
     return NULL;
 }
 
-int Booklist_add(Booklist *bl, const Book *b)
+int Booklist_add(BookList *bl, const Book *b)
 {
     if (booklist_find(bl, b->ocaid) != NULL) {
         return -2;
@@ -63,7 +63,7 @@ int Booklist_add(Booklist *bl, const Book *b)
     return 0;
 }
 
-int booklist_remove(Booklist *bl, const char *ocaid)
+int booklist_remove(BookList *bl, const char *ocaid)
 {
     Book *b = booklist_find(bl, ocaid);
     size_t idx;
@@ -145,4 +145,48 @@ int book_parse_master_line(const char *line, Book *out)
     b.stock = DEFAULT_STOCK;
     *out = b;
     return 1;
+}
+
+int book_import_master(BookList *bl, ImportReport *report)
+{
+    FILE *f = fopen(FILE_BOOKS_MASTER, "r");
+    char lin[LINE_BUFFER];
+    Book b;
+    int first = 1;
+    int rc;
+
+    memset(report, 0, sizeof(*report));
+    if (f == NULL) {
+        return -1;
+    }
+    while (fgets(line, sizeof(line), f) != NULL) {
+        size_t len = strlen(line);
+
+        while (len > 0 && (line[len -1] == '\n' || line[len - 1] == '\r')) {
+            line[--len] = '\0';
+        }
+        if (first) {            /* baris header */
+            first = 0;
+            continue;
+        }
+        if (len == 0) {
+            continue;
+        }
+        report->total_lines++;
+        if (!book_parse_master_line(line, &b)) {
+            report->skipped_invalid++;
+            continue;
+        }
+        rc = booklist_add(bl, &b);
+        if (rc == 0) {
+            report->imported++;
+        } else if (rc == -2) {
+            report->skipped_duplicate++;
+        } else {
+            fclose(f);
+            return -1;
+        }
+    }
+    fclose(f);
+    return 0;
 }
