@@ -47,3 +47,19 @@ static void bubble_sort(Book **arr, size_t n, SortKey key, SortOrder order)
         }
     }
 }
+
+static void insertion_sort(Book **arr, size_t n, SortKey key, SortOrder order)
+{
+    size_t i, j;
+
+    for (i = 1; i < n; i++) {
+        Book *cur = arr[i];
+
+        j = i;
+        while (j > 0 && out_of_order(arr[j - 1], cur, key, order)) {
+            arr[j] = arr[j - 1];
+            j--;
+        }
+        arr[j] = cur;
+    }
+}
