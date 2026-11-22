@@ -182,3 +182,27 @@ void util_prompt_text(const char *prompt, char *buf, size_t size)
     }
     buf[0] = '\0';
 }
+
+int util_prompt_yes_no(const char *prompt)
+{
+    char buf[16];
+
+    while (!util_eof()) {
+        util_read_line(prompt, buf, sizeof(buf));
+        if (util_icmp(buf, "y") == 0 || util_icmp(buf, "ya") == 0) {
+            return 1;
+        }
+        if (util_icmp(buf, "n") == 0 || util_icmp(buf, "t") == 0 ||
+            util_icmp(buf, "tidak") == 0) {
+            return 0;
+        }
+        puts("  ! Jawab dengan y / n.");
+    }
+    return 0;
+}
+
+void util_pause(void)
+{
+    char buf[16];
+    util_read_line("\nTekan Enter untuk melanjutkan...", buf, sizeof(buf));
+}
