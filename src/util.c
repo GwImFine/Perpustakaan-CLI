@@ -39,3 +39,27 @@ void util_copy(char *dst, size_t size, const char *src)
     memcpy(dst, src, n);
     dst[n] = '\0';
 }
+
+oid util_read_line(const char *prompt, char *buf, size_t size)
+{
+    size_t len;
+
+    if (prompt != NULL) {
+        fputs(prompt, stdout);
+        fflush(stdout);
+    }
+    if (fgets(buf, (int)size, stdin) == NULL) {
+        buf[0] = '\0';
+        g_eof = 1;
+        return;
+    }
+    len = strlen(buf);
+    if (len > 0 && buf[len - 1] == '\n') {
+        buf[len - 1] = '\0';
+    } else {
+        int c; /* baris terlalu panjang: buang sisanya */
+        while ((c = getchar()) != '\n' && c != EOF) {
+        }
+    }
+    util_trim(buf);
+}
