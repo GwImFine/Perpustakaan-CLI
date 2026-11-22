@@ -192,3 +192,42 @@ void ui_show_loans(const BookList *bl, Loan **list, size_t n, int show_user, con
         }
     } while (ask_page(&page, pages));
 }
+
+int ui_choose_sort(SortAlgo *algo, SortKey *key, SortOrder *order)
+{
+    int choice;
+    int k;
+
+    puts("\nUrutkan katalog?");
+    puts("  1. Ya, pilih algoritma & atribut pengurutan");
+    puts("  2. Tidak (urutan asli)");
+    puts("  0. Batal");
+    choice = util_prompt_int("Pilihan: ", 0, 2);
+    if (choice == 0) {
+        return -1;
+    }
+    if (choice == 2) {
+        return 0;
+    }
+
+    puts("\nAlgoritma pengurutan:");
+    puts("  1. Bubble Sort");
+    puts("  2. Insertion Sort");
+    puts("  3. Selection Sort");
+    *algo = (SortAlgo)util_prompt_int("Pilihan: ", 1, 3);
+
+    puts("\nUrutkan berdasarkan:");
+    puts("  1. ID Buku (ocaid)");
+    puts("  2. Judul Buku");
+    puts("  3. Tahun Publikasi");
+    puts("  4. Ketebalan Halaman (page_count)");
+    puts("  5. Stok Ketersediaan");
+    k = util_prompt_int("Pilihan: ", 1, 5);
+    *key = (SortKey)k;
+
+    puts("\nArah pengurutan:");
+    printf("  1. %s\n", sort_order_label(*key, ORDER_ASC));
+    printf("  2. %s\n", sort_order_label(*key, ORDER_DESC));
+    *order = (SortOrder)util_prompt_int("Pilihan: ", 1, 2);
+    return 1;
+}
