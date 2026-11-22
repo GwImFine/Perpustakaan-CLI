@@ -190,3 +190,26 @@ int book_import_master(BookList *bl, ImportReport *report)
     fclose(f);
     return 0;
 }
+
+int book_catalog_save(const BookList *bl)
+{
+    char tmp[256];
+    FILE *f;
+    size_t i;
+
+    snprintf(tmp, sizeof(tmp), "%s.tmp", FILE_CATALOG);
+    f = fopen(tmp, "w");
+    if (f == NULL) {
+        return -1;
+    }
+    for (i = 0; i < bl->count; i++) {
+        const Book *b = &bl->items[i];
+        fprintf(f, "%s|%s|%s|%d|%d|%s|%s|%s|%d\n", b->ocaid, b->title, b->author,
+                b->year, b->page_count, b->edition, b->work, b->url, b->stock);
+    }
+    if (fclose(f) != 0) {
+        remove(tmp);
+        return -1;
+    }
+    return util_replace_file(tmp, FILE_CATALOG);
+}
