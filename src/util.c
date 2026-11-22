@@ -63,3 +63,38 @@ oid util_read_line(const char *prompt, char *buf, size_t size)
     }
     util_trim(buf);
 }
+
+int util_parse_int(const char *s, int min, int max, int *out)
+{
+    char *end;
+    long v;
+
+    if (s == NULL || *s == '\0') {
+        return 0;
+    }
+    errno = 0;
+    v = strtol(s, &end, 10);
+    if (errno != 0 || *end != '\0' || v < min || v > max) {
+        return 0;
+    }
+    *out = (int)v;
+    return 1;
+}
+
+int util_prompt_int(const char *prompt, int min, int max)
+{
+    char buf[64];
+    int value;
+
+    while (!util_eof()) {
+        util_read_line(prompt, buf, sizeof(buf));
+        if (util_eof()) {
+            break;
+        }
+        if (util_parse_int(buf, min, max, &value)) {
+            return value;
+        }
+        printf("  ! Input tidak valid. Masukkan bilangan bulat %d - %d.\n", min, max);
+    }
+    return min;
+}
