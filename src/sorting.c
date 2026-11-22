@@ -63,3 +63,29 @@ static void insertion_sort(Book **arr, size_t n, SortKey key, SortOrder order)
         arr[j] = cur;
     }
 }
+
+static void selection_sort(Book **arr, size_t n, SortKey key, SortOrder order)
+{
+    size_t i, j, best;
+
+    for (i = 0; i + 1 < n; i++) {
+        best = i;
+        for (j = i + 1; j < n; j++) {
+            if (out_of_order(arr[best], arr[j], key, order)) {
+                best = j;
+            }
+        }
+        if (best != i) {
+            swap_ptr(&arr[i], &arr[best]);
+        }
+    }
+}
+
+void sort_books(Book **arr, size_t n, SortAlgo algo, SortKey key, SortOrder order)
+{
+    switch (algo) {
+    case SORT_BUBBLE:    bubble_sort(arr, n, key, order);    break;
+    case SORT_INSERTION: insertion_sort(arr, n, key, order); break;
+    case SORT_SELECTION: selection_sort(arr, n, key, order); break;
+    }
+}
