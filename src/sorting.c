@@ -1,0 +1,49 @@
+#include "sorting.h"
+
+#include "util.h"
+
+static int compare_key(const Book *a, const Book *b, SortKey key)
+{
+    switch (key) {
+    case KEY_ID:    return util_icmp(a->ocaid, b->ocaid);
+    case KEY_TITLE: return util_icmp(a->title, b->title);
+    case KEY_YEAR:  return (a->year > b->year) - (a->year < b->year);
+    case KEY_PAGES: return (a->page_count > b->page_count) - (a->page_count < b->page_count);
+    case KEY_STOCK: return (a->stock > b->stock) - (a->stock < b->stock);
+    }
+    return 0;
+}
+
+static int out_of_order(const Book *a, const Book *b, SortKey key, SortOrder order)
+{
+    int c = compare_key(a, b, key);
+
+    return order == ORDER_ASC ? c > 0 : c < 0;
+}
+
+static void swap_ptr(Book **a, Book **b)
+{
+    Book *t = *a;
+
+    *a = *b;
+    *b = t;
+}
+
+static void bubble_sort(Book **arr, size_t n, SortKey key, SortOrder order)
+{
+    size_t i, j;
+
+    for (i = 0; i + 1 < n; i++) {
+        int swapped = 0;
+
+        for (j = 0; j + 1 < n - i; j++) {
+            if (out_of_order(arr[j], arr[j + 1], key, order)) {
+                swap_ptr(&arr[j], &arr[j + 1]);
+                swapped = 1;
+            }
+        }
+        if (!swapped) {
+            break;
+        }
+    }
+}
