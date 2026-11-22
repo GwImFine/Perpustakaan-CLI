@@ -1,10 +1,11 @@
+
 #include "user.h"
 
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-
 #include "util.h"
+#include "config.h"
 
 void userlist_init(UserList *ul)
 {
@@ -58,27 +59,37 @@ int users_save(const UserList *ul)
 
     snprintf(tmp, sizeof(tmp), "%s.tmp", FILE_USERS);
     f = fopen(tmp, "w");
+
     if (f == NULL) {
         return -1;
     }
+
     for (i = 0; i < ul->count; i++) {
-        fprintf(f, "%s %s %s\n", ul->items[i].username, ul->items[i].password,
+        fprintf(f, "%s %s %s\n",
+                ul->items[i].username,
+                ul->items[i].password,
                 ul->items[i].role);
     }
+
     if (fclose(f) != 0) {
         remove(tmp);
         return -1;
     }
+
     return util_replace_file(tmp, FILE_USERS);
 }
 
-static void add_default(UserList *ul, const char *name, const char *pass, const char *role)
+static void add_default(UserList *ul,
+                       const char *name,
+                       const char *pass,
+                       const char *role)
 {
     User u;
 
     util_copy(u.username, sizeof(u.username), name);
     util_copy(u.password, sizeof(u.password), pass);
     util_copy(u.role, sizeof(u.role), role);
+
     users_add(ul, &u);
 }
 
@@ -89,20 +100,23 @@ int users_load(UserList *ul)
     User u;
 
     if (f == NULL) {
-        /* Berkas belum ada: buat akun bawaan agar program langsung bisa dipakai */
         add_default(ul, "admin", "admin123", ROLE_ADMIN);
         add_default(ul, "user1", "user123", ROLE_USER);
         add_default(ul, "user2", "user123", ROLE_USER);
+
         return users_save(ul);
     }
+
     while (fgets(line, sizeof(line), f) != NULL) {
-        if (sscanf(line, "%31s %31s %11s", u.username, u.password, u.role) == 3) {
+        if (sscanf(line, "%31s %31s %11s",
+                    u.username, u.password, u.role) == 3) {
             if (users_add(ul, &u) == -1) {
                 fclose(f);
                 return -1;
             }
         }
     }
+
     fclose(f);
     return 0;
 }
@@ -115,6 +129,7 @@ int users_authenticate(const UserList *ul, const char *username,
     if (u == NULL || strcmp(u->password, password) != 0) {
         return 0;
     }
+
     *out = *u;
     return 1;
 }
