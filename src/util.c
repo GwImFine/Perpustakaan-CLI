@@ -206,3 +206,24 @@ void util_pause(void)
     char buf[16];
     util_read_line("\nTekan Enter untuk melanjutkan...", buf, sizeof(buf));
 }
+
+void util_today(char *buf, size_t size)
+{
+    time_t now = time(NULL);
+    struct tm *t = localtime(&now);
+
+    if (t == NULL || strftime(buf, size, "%d-%m-%Y", t) == 0) {
+        util_copy(buf, size, "01-01-1970");
+    }
+}
+
+int util_replace_file(const char *tmp, const char *dest)
+{
+    if (rename(tmp, dest) != 0) {
+        remove(dest); /* platform yang tidak menimpa otomatis */
+        if (rename(tmp, dest) != 0) {
+            return -1;
+        }
+    }
+    return 0;
+}
