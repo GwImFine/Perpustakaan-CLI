@@ -136,3 +136,49 @@ int util_icontains(const char *hay, const char *needle)
     }
     return 0;
 }
+
+void util_sanitize_field(char *s)
+{
+    for (; *s != '\0'; s++) {
+        if (*s == '|') {
+            *s = '/';
+        } else if ((unsigned char)*s < 32 || *s == 127) {
+            *s = ' ';
+        }
+    }
+}
+
+int util_is_token(const char *s)
+{
+    if (s == NULL || *s == '\0') {
+        return 0;
+    }
+    for (; *s != '\0'; s++) {
+        if (!isgraph((unsigned char)*s) || *s == '|') {
+            return 0;
+        }
+    }
+    return 1;
+}
+
+void util_prompt_text(const char *prompt, char *buf, size_t size)
+{
+    char tmp[4096];
+
+    while (!util_eof()) {
+        util_read_line(prompt, tmp, sizeof(tmp));
+        if (util_eof()) {
+            break;
+        }
+        if (tmp[0] == '\0') {
+            puts("  ! Input tidak boleh kosong.");
+        } else if (strlen(tmp) >= size) {
+            printf("  ! Terlalu panjang (maksimal %zu karakter).\n", size - 1);
+        } else {
+            util_sanitize_field(tmp);
+            util_copy(buf, size, tmp);
+            return;
+        }
+    }
+    buf[0] = '\0';
+}
