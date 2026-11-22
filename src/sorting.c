@@ -89,3 +89,39 @@ void sort_books(Book **arr, size_t n, SortAlgo algo, SortKey key, SortOrder orde
     case SORT_SELECTION: selection_sort(arr, n, key, order); break;
     }
 }
+
+const char *sort_algo_name(SortAlgo algo)
+{
+    switch (algo) {
+    case SORT_BUBBLE:    return "Bubble Sort";
+    case SORT_INSERTION: return "Insertion Sort";
+    case SORT_SELECTION: return "Selection Sort";
+    }
+    return "?";
+}
+
+const char *sort_key_name(SortKey key)
+{
+    switch (key) {
+    case KEY_ID:    return "ID Buku (ocaid)";
+    case KEY_TITLE: return "Judul";
+    case KEY_YEAR:  return "Tahun Terbit";
+    case KEY_PAGES: return "Jumlah Halaman";
+    case KEY_STOCK: return "Stok";
+    }
+    return "?";
+}
+
+const char *sort_order_label(SortKey key, SortOrder order)
+{
+    int asc = (order == ORDER_ASC);
+
+    switch (key) {
+    case KEY_ID:    return asc ? "Ascending" : "Descending";
+    case KEY_TITLE: return asc ? "A-Z" : "Z-A";
+    case KEY_YEAR:  return asc ? "Terlama ke Terbaru" : "Terbaru ke Terlama";
+    case KEY_PAGES: return asc ? "Tipis ke Tebal" : "Tebal ke Tipis";
+    case KEY_STOCK: return asc ? "Sedikit ke Banyak" : "Banyak ke Sedikit";
+    }
+    return "?";
+}
