@@ -98,3 +98,41 @@ int util_prompt_int(const char *prompt, int min, int max)
     }
     return min;
 }
+
+int util_icmp(const char *a, const char *b)
+{
+    while (*a != '\0' && *b != '\0') {
+        int ca = tolower((unsigned char)*a);
+        int cb = tolower((unsigned char)*b);
+        if (ca != cb) {
+            return ca - cb;
+        }
+        a++;
+        b++;
+    }
+    return tolower((unsigned char)*a) - tolower((unsigned char)*b);
+}
+
+int util_icontains(const char *hay, const char *needle)
+{
+    size_t n = strlen(needle);
+    size_t i;
+
+    if (n == 0) {
+        return 1;
+    }
+    for (; *hay != '\0'; hay++) {
+        for (i = 0; i < n; i++) {
+            if (hay[i] == '\0') {
+                return 0;
+            }
+            if (tolower((unsigned char)hay[i]) != tolower((unsigned char)needle[i])) {
+                break;
+            }
+        }
+        if (i == n) {
+            return 1;
+        }
+    }
+    return 0;
+}
