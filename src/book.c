@@ -76,3 +76,49 @@ int booklist_remove(Booklist *bl, const char *ocaid)
     bl->count--;
     return 0;
 }
+
+static int read_text_field(const char **pp, char *dst, size_t size)
+{
+    const char *p = *pp;
+    size_t n = 0;
+
+    while (*p != '\0' && isspace((unsigned char)*p)) {
+        p++;
+    }
+    if (*p == '\0') {
+        return 0;
+    }
+    if (*p == '"') {
+        p++;
+        for (;;) {
+            if (*p == '\0') {
+                return 0; /* tanda petik penutup tidak ada */
+            }
+            if (*p == '"') {
+                if (p[1] == '"') {
+                    if (n + 1 < size) {
+                        dst[n++] = '"';
+                    }
+                    p += 2;
+                    continue;
+                }
+                p++;
+                break;
+            }
+            if (n + 1< size) {
+                dst[n++] = *p;
+            }
+            p++;
+        }
+    } else {
+        while (*p != '\0' && !isspace((unsigned char)*p)) {
+            if (n + 1 < size) {
+                dst[n++] = *p;
+            }
+            p++;
+        }
+    }
+    dst[n] = '\0';
+    *pp = p;
+    return 1;
+}
