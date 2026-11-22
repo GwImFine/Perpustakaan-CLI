@@ -122,3 +122,27 @@ static int read_text_field(const char **pp, char *dst, size_t size)
     *pp = p;
     return 1;
 }
+
+int book_parse_master_line(const char *line, Book *out)
+{
+    const char *p = line;
+    Book b;
+
+    memset(&b, 0, sizeof(b));
+    if (!read_text_field(&p, b.ocaid, sizeof(b.ocaid)) ||
+        !read_text_field(&p, b.title, sizeof(b.title)) ||
+        !read_text_field(&p, b.author, sizeof(b.author))) {
+        return 0;
+    }
+    if (sscanf(p, "%d %d %31s %31s %127s", &b.year, &b. year, &b.page_count, b.edition, b.work, b.url) != 5) {
+        return 0;
+    }
+    if (b.year <= 0 || b.page_count <= 0 || !util_is_token(b.ocaid)) {
+        return 0;
+    }
+    util_sanitize_field(b.title);
+    util_sanitize_field(b.author);
+    b.stock = DEFAULT_STOCK;
+    *out = b;
+    return 1;
+}
