@@ -120,3 +120,21 @@ int users_load(UserList *ul)
     fclose(f);
     return 0;
 }
+
+int users_authenticate(const UserList *ul, const char *username,
+                       const char *password, User *out)
+{
+    const User *u = users_find(ul, username);
+
+    if (u == NULL || strcmp(u->password, password) != 0) {
+        return 0;
+    }
+
+    *out = *u;
+    return 1;
+}
+
+int user_is_admin(const User *u)
+{
+    return strcmp(u->role, ROLE_ADMIN) == 0;
+}
