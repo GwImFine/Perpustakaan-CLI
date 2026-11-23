@@ -129,3 +129,40 @@ static void admin_edit_book(App *app)
     puts("\nData buku berhasil diperbarui:");
     ui_show_book_detail(b);
 }
+
+static void admin_delete_book(App *app)
+{
+    char id[LEN_OCAID + 64];
+    Book *b;
+    Book backup;
+    size_t active;
+
+    ui_title("HAPUS BUKU");
+    util_read_line("ID buku yang akan dihapus : ", id, sizeof(id));
+    if (util_eof()) {
+        return;
+    }
+    b = booklist_find(&app->books, id);
+    if (b == NULL) {
+        puts("  ! Buku dengan ID tersebut tidak ditemukan.");
+        return;
+    }
+    active = loans_count_active_for_book(&app->loans, id);
+    if (active > 0) {
+        printf("  ! Buku tidak dapat dihapus: masih ada %zu peminjaman aktif.\n", active);
+        return;
+    }
+    ui_show_book_detail(b);
+    if (!util_prompt_yes_no("\nYakin menghapus buku ini? (y/n) : ")) {
+        puts("Penghapusan dibatalkan.");
+        return;
+    }
+    backup = *b;
+    booklist_remove(&app->books, id);
+    if (book_catalog_save(&app->books) != 0) {
+        booklist_add(&app->books, &backup);
+        puts("  ! Gagal menyimpan ke berkas. Penghapusan dibatalkan.");
+        return;
+    }
+    puts("Buku berhasil dihapus.");
+}
