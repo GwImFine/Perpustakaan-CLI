@@ -166,3 +166,49 @@ static void admin_delete_book(App *app)
     }
     puts("Buku berhasil dihapus.");
 }
+
+static void admin_loan_report(const App *app)
+{
+    Loan **view;
+    size_t i, n = 0;
+
+    view = malloc((app->loans.count + 1) * sizeof(Loan *));
+    if (view == NULL) {
+        puts("Memori tidak cukup.");
+        return;
+    }
+    for (i = app->loans.count; i > 0; i--) { /* terbaru di atas */
+        view[n++] = &app->loans.items[i - 1];
+    }
+    ui_show_loans(&app->books, view, n, 1, "LAPORAN SELURUH TRANSAKSI PEMINJAMAN");
+    free(view);
+}
+
+void menu_admin_run(App *app, const User *session)
+{
+    int choice;
+
+    do {
+        printf("\n=== MENU ADMIN (Pustakawan) | login: %s ===\n", session->username);
+        puts("1. Lihat katalog buku (dengan pilihan sorting)");
+        puts("2. Cari buku (ID / judul)");
+        puts("3. Tambah buku");
+        puts("4. Ubah data buku");
+        puts("5. Hapus buku");
+        puts("6. Laporan transaksi peminjaman");
+        puts("0. Logout");
+        choice = util_prompt_int("Pilihan: ", 0, 6);
+        if (util_eof()) {
+            break;
+        }
+        switch (choice) {
+        case 1: ui_browse_catalog(&app->books, 0); break;
+        case 2: ui_search_books(&app->books);      break;
+        case 3: admin_add_book(app);               break;
+        case 4: admin_edit_book(app);              break;
+        case 5: admin_delete_book(app);            break;
+        case 6: admin_loan_report(app);            break;
+        default: break;
+        }
+    } while (choice != 0);
+}
