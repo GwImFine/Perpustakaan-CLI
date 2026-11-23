@@ -231,3 +231,43 @@ int ui_choose_sort(SortAlgo *algo, SortKey *key, SortOrder *order)
     *order = (SortOrder)util_prompt_int("Pilihan: ", 1, 2);
     return 1;
 }
+
+void ui_browse_catalog(const BookList *bl, int only_available)
+{
+    SortAlgo algo = SORT_BUBBLE;
+    SortKey key = KEY_ID;
+    SortOrder order = ORDER_ASC;
+    Book **view;
+    size_t n = 0, i;
+    int use_sort;
+    char title[200];
+
+    use_sort = ui_choose_sort(&algo, &key, &order);
+    if (use_sort < 0 || util_eof()) {
+        return;
+    }
+    view = malloc((bl->count + 1) * sizeof(Book *));
+    if (view == NULL) {
+        puts("Memori tidak cukup.");
+        return;
+    }
+    for (i = 0; i < bl->count; i++) {
+        if (!only_available || bl->items[i].stock > 0) {
+            view[n++] = &bl->items[i];
+        }
+    }
+    snprintf(title, sizeof(title), "%s", only_available ? "KATALOG BUKU TERSEDIA (stok > 0)"
+                                                         : "KATALOG SELURUH BUKU");
+    if (use_sort && n > 1) {
+        clock_t t0 = clock();
+        double secs;
+
+        printf("\nMengurutkan %zu buku dengan %s ...\n", n, sort_algo_name(algo));
+        sort_books(view, n, algo, key, order);
+        secs = (double)(clock() - t0) / CLOCKS_PER_SEC;
+        printf("Selesai dalam %.3f detik. Urutan: %s (%s)\n", secs,
+               sort_key_name(key), sort_order_label(key, order));
+    }
+    ui_show_books(view, n, title);
+    free(view);
+}
