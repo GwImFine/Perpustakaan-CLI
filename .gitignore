@@ -1,0 +1,9 @@
+# File hasil compile
+*.o
+*.exe
+
+# Data hasil menjalankan aplikasi
+data/katalog.txt
+data/user.txt
+data/peminjaman.txt
+data/*.tmp
