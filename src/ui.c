@@ -271,3 +271,47 @@ void ui_browse_catalog(const BookList *bl, int only_available)
     ui_show_books(view, n, title);
     free(view);
 }
+
+void ui_search_books(const BookList *bl)
+{
+    char query[LEN_TITLE];
+    Book **hits;
+    size_t n = 0, i;
+    int mode;
+
+    puts("\nCari buku berdasarkan:");
+    puts("  1. ID buku (ocaid, harus sama persis)");
+    puts("  2. Judul (mengandung kata kunci)");
+    puts("  0. Batal");
+    mode = util_prompt_int("Pilihan: ", 0, 2);
+    if (mode == 0) {
+        return;
+    }
+    util_prompt_text(mode == 1 ? "Masukkan ID buku : " : "Masukkan kata kunci judul : ",
+                     query, sizeof(query));
+    if (util_eof()) {
+        return;
+    }
+    hits = malloc((bl->count + 1) * sizeof(Book *));
+    if (hits == NULL) {
+        puts("Memori tidak cukup.");
+        return;
+    }
+    for (i = 0; i < bl->count; i++) {
+        const Book *b = &bl->items[i];
+        int match = (mode == 1) ? util_icmp(b->ocaid, query) == 0
+                                : util_icontains(b->title, query);
+        if (match) {
+            hits[n++] = &bl->items[i];
+        }
+    }
+    if (n == 0) {
+        printf("\nTidak ada buku yang cocok dengan \"%s\".\n", query);
+    } else if (n == 1) {
+        puts("\nDitemukan 1 buku:");
+        ui_show_book_detail(hits[0]);
+    } else {
+        ui_show_books(hits, n, "HASIL PENCARIAN");
+    }
+    free(hits);
+}
