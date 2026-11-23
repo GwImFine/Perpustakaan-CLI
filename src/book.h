@@ -20,27 +20,27 @@ typedef struct {
     Book *items;
     size_t count;
     size_t capacity;
-} Booklist;
+} BookList;
 
 typedef struct {
     int total_lines;
     int imported;
     int skipped_invalid;
-    int skipped_duplicates;
-} ImportStats;
+    int skipped_duplicate;
+} ImportReport;
 
-void booklist_init(Booklist *bl);
-void booklist_free(Booklist *bl);
-Book *booklist_find(const Booklist *bl, const char *ocaid);
-int booklist_add(Booklist *bl, const Book *b);      /* 0 ok, -1 memori, -2 duplikat */
-int booklist_remove(Booklist *bl, const char *ocaid); /* 0 ok, -1 tidak ditemukan */
+void booklist_init(BookList *bl);
+void booklist_free(BookList *bl);
+Book *booklist_find(const BookList *bl, const char *ocaid);
+int booklist_add(BookList *bl, const Book *b);      /* 0 ok, -1 memori, -2 duplikat */
+int booklist_remove(BookList *bl, const char *ocaid); /* 0 ok, -1 tidak ditemukan */
 
 /* Dataset asli (read-only) -> memori */
-int book_import_master(Booklist *bl, ImportReport *report);
+int book_import_master(BookList *bl, ImportReport *report);
 int book_parse_master_line(const char *line, Book *out);
 
 /* Inventaris operasional (dataset + stok) */
-int book_catalog_load(Booklist *bl);                /* -1 jika berkas belum ada */
-int book_catalog_save(const Booklist *bl);
+int book_catalog_load(BookList *bl);                /* -1 jika berkas belum ada */
+int book_catalog_save(const BookList *bl);
 
 #endif

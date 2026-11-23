@@ -40,7 +40,7 @@ void util_copy(char *dst, size_t size, const char *src)
     dst[n] = '\0';
 }
 
-oid util_read_line(const char *prompt, char *buf, size_t size)
+void util_read_line(const char *prompt, char *buf, size_t size)
 {
     size_t len;
 

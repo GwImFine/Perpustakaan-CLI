@@ -13,7 +13,7 @@ Project UAS Lab Pemrograman Kelas A — Informatika FMIPA Universitas Syiah Kual
 
 ## Struktur Berkas
 ```
-perpustakaan/
+Perpustakaan-CLI/
 ├── Makefile
 ├── README.md
 ├── data/

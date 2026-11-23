@@ -41,8 +41,10 @@ static int booklist_reserve(BookList *bl, size_t need)
     return 0;
 }
 
-Book *Booklist_find(const BookList *bl, const char *ocaid)
+Book *booklist_find(const BookList *bl, const char *ocaid)
 {
+    size_t i;
+    
     for (i = 0; i < bl->count; i++) {
         if (strcmp(bl->items[i].ocaid, ocaid) == 0) {
             return &bl->items[i];
@@ -51,7 +53,7 @@ Book *Booklist_find(const BookList *bl, const char *ocaid)
     return NULL;
 }
 
-int Booklist_add(BookList *bl, const Book *b)
+int booklist_add(BookList *bl, const Book *b)
 {
     if (booklist_find(bl, b->ocaid) != NULL) {
         return -2;
@@ -105,7 +107,7 @@ static int read_text_field(const char **pp, char *dst, size_t size)
                 p++;
                 break;
             }
-            if (n + 1< size) {
+            if (n + 1 < size) {
                 dst[n++] = *p;
             }
             p++;
@@ -134,7 +136,7 @@ int book_parse_master_line(const char *line, Book *out)
         !read_text_field(&p, b.author, sizeof(b.author))) {
         return 0;
     }
-    if (sscanf(p, "%d %d %31s %31s %127s", &b.year, &b. year, &b.page_count, b.edition, b.work, b.url) != 5) {
+    if (sscanf(p, " %d %d %31s %31s %127s", &b.year, &b.page_count, b.edition, b.work, b.url) != 5) {
         return 0;
     }
     if (b.year <= 0 || b.page_count <= 0 || !util_is_token(b.ocaid)) {
@@ -150,7 +152,7 @@ int book_parse_master_line(const char *line, Book *out)
 int book_import_master(BookList *bl, ImportReport *report)
 {
     FILE *f = fopen(FILE_BOOKS_MASTER, "r");
-    char lin[LINE_BUFFER];
+    char line[LINE_BUFFER];
     Book b;
     int first = 1;
     int rc;
@@ -162,7 +164,7 @@ int book_import_master(BookList *bl, ImportReport *report)
     while (fgets(line, sizeof(line), f) != NULL) {
         size_t len = strlen(line);
 
-        while (len > 0 && (line[len -1] == '\n' || line[len - 1] == '\r')) {
+        while (len > 0 && (line[len - 1] == '\n' || line[len - 1] == '\r')) {
             line[--len] = '\0';
         }
         if (first) {            /* baris header */
